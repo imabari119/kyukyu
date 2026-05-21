@@ -1,0 +1,56 @@
+name: Fetch Medical Data
+
+on:
+  schedule:
+    - cron: "0 9 * * FRI"   # JST 18:00
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Make script executable
+        run: chmod +x run.sh
+
+      - name: Run script
+        run: ./run.sh
+
+      - name: Detect diff
+        id: diff
+        run: |
+          git add .
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            git diff --cached --name-only > changed_files.txt
+          fi
+
+      - name: Notify Discord
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          FILES=$(cat changed_files.txt | sed ':a;N;$!ba;s/\n/, /g')
+          PAYLOAD=$(jq -n --arg content "更新がありました:\n$FILES" '{content: $content}')
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$PAYLOAD" \
+               "$WEBHOOK"
+
+      - name: Commit & Push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git commit -m "Update data: $(date '+%Y-%m-%d %H:%M:%S')"
+          git push
