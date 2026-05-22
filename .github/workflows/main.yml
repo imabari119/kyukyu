@@ -2,8 +2,8 @@ name: Fetch Medical Data
 
 on:
   schedule:
-    - cron: "0 6 * * FRI"      # JST 15:00 毎週金曜日（引数なし）
-    - cron: "0 2 1 * *"        # JST 11:00 毎月1日（30日）
+    - cron: "0 6 * * FRI"      # JST 15:00 毎週金曜
+    - cron: "0 2 1 * *"        # JST 11:00 毎月1日
   workflow_dispatch:
 
 jobs:
@@ -22,11 +22,11 @@ jobs:
       - name: Make script executable
         run: chmod +x run.sh
 
-      # ★ cron によって run.sh の引数を切り替える
+      # ★ 毎月1日なら days=30 を渡す（UTC で判定）
       - name: Set DAYS
         id: setdays
         run: |
-          if [ "${{ github.event.schedule }}" = "0 2 1 * *" ]; then
+          if [ "$(date -u +%d)" = "01" ]; then
             echo "days=30" >> $GITHUB_OUTPUT
           else
             echo "days=" >> $GITHUB_OUTPUT
@@ -40,10 +40,11 @@ jobs:
             ./run.sh ${{ steps.setdays.outputs.days }}
           fi
 
+      # ★ output/ のみ差分検出
       - name: Detect diff
         id: diff
         run: |
-          git add .
+          git add output/
           if git diff --cached --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
@@ -51,6 +52,7 @@ jobs:
             git diff --cached --name-only > changed_files.txt
           fi
 
+      # ★ Discord 通知（output/ の変更のみ）
       - name: Notify Discord
         if: steps.diff.outputs.changed == 'true'
         env:
@@ -63,6 +65,7 @@ jobs:
                -d "$PAYLOAD" \
                "$WEBHOOK"
 
+      # ★ output/ のみ commit/push
       - name: Commit & Push
         if: steps.diff.outputs.changed == 'true'
         run: |
