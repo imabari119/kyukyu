@@ -63,7 +63,7 @@ for i in $(seq 0 "$DAYS"); do
 
     echo "[INFO] 取得中: $ymd → ${DIR}/${ymd}.html"
 
-    curl -sSL -b "$COOKIE" "$url" | pup 'div.resultList' > "${DIR}/${ymd}.html"
+    curl -sSL -b "$COOKIE" "$url" | hxnormalize -x | hxselect 'div.resultList' > "${DIR}/${ymd}.html"
 done
 
 echo "[INFO] 完了しました。"
