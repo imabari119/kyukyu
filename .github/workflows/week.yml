@@ -2,7 +2,7 @@ name: Fetch Medical Data
 
 on:
   schedule:
-    - cron: "0 6 * * FRI"      # JST 15:00 毎週金曜
+    - cron: "0 6 * * FRI"
   workflow_dispatch:
 
 jobs:
