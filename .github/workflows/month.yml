@@ -2,7 +2,7 @@ name: Fetch Medical Data (Monthly on the 1st)
 
 on:
   schedule:
-    - cron: "0 2 1 * *"
+    - cron: "0 2 1,28 * *"
   workflow_dispatch:
 
 jobs:
