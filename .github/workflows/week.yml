@@ -2,7 +2,7 @@ name: Fetch Medical Data
 
 on:
   schedule:
-    - cron: "0 6 * * FRI"
+    - cron: "0 5 * * FRI"
   workflow_dispatch:
 
 jobs:
