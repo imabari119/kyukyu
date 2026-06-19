@@ -1,4 +1,4 @@
-name: Fetch Medical Data (Monthly on the 1st)
+name: Fetch Medical Data (30 Days)
 
 on:
   schedule:
