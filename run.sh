@@ -44,6 +44,8 @@ curl -sSL -b "$COOKIE" -c "$COOKIE" \
   "https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2700/search" \
   -o /dev/null
 
+sleep 1
+
 # -------------------------
 # 今日から DAYS 日分ループ
 # -------------------------
